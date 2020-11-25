@@ -157,7 +157,7 @@ where
         .get(CONTENT_TYPE)
         .and_then(|hv| hv.to_str().ok());
     let body = String::from_request(&req, &mut payload.into_inner()).await?;
-    lte req = serde_json::from_str::<GraphQLBatchRequest<S>>(&body).map_err(ErrorBadRequest)?
+    let req = serde_json::from_str::<GraphQLBatchRequest<S>>(&body).map_err(ErrorBadRequest)?
 
     let gql_batch_response = req.execute(schema, context).await;
     let gql_response = serde_json::to_string(&gql_batch_response)?;
