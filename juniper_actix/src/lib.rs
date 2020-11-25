@@ -156,21 +156,9 @@ where
         .headers()
         .get(CONTENT_TYPE)
         .and_then(|hv| hv.to_str().ok());
-    let req = match content_type_header {
-        Some("application/json") => {
-            let body = String::from_request(&req, &mut payload.into_inner()).await?;
-            serde_json::from_str::<GraphQLBatchRequest<S>>(&body).map_err(ErrorBadRequest)
-        }
-        Some("application/graphql") => {
-            let body = String::from_request(&req, &mut payload.into_inner()).await?;
-            Ok(GraphQLBatchRequest::Single(GraphQLRequest::new(
-                body, None, None,
-            )))
-        }
-        _ => Err(ErrorUnsupportedMediaType(
-            "GraphQL requests should have content type `application/json` or `application/graphql`",
-        )),
-    }?;
+    let body = String::from_request(&req, &mut payload.into_inner()).await?;
+    lte req = serde_json::from_str::<GraphQLBatchRequest<S>>(&body).map_err(ErrorBadRequest)?
+
     let gql_batch_response = req.execute(schema, context).await;
     let gql_response = serde_json::to_string(&gql_batch_response)?;
     let mut response = match gql_batch_response.is_ok() {
